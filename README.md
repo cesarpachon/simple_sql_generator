@@ -3,6 +3,12 @@ javascript simple SQL generator library
 
 This is a small library in pure javascript, intended to assist with the building of SQL strings. No intentions of becoming an ORM!
 
+##installation
+this module can be installed via npm: 
+
+```bash
+npm install simple_sql_generator
+```
 
 ##examples
 
