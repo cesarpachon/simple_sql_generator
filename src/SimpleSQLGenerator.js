@@ -37,17 +37,16 @@ function _in(params){
   return s; 
 };
 
-//returns "name" [as "alias"]. use with map.
-function _from(table, i, tables){
-  var s = _q(table.name);
-  if(table.alias){
-    s+= " as " + table.alias; 
-  }
-  if(i < tables.length -1 )
-    s += ", ";
-  return s; 
-};
-
+//returns list of "name" [as "alias"]. use with reduce.
+function _from(ac, el, i, col){
+    var s = ac + el.name; 
+    if(el.alias){
+      s += " as ";
+      s += el.alias;
+    }
+    s += (i < col.length -1)?", ":" ";
+    return s; 
+}
 
 var SimpleSQLGenerator = function(){
   this.operation = null; 
@@ -86,9 +85,9 @@ SimpleSQLGenerator.prototype.from= function(table_name, alias){
 */
 SimpleSQLGenerator.prototype.where= function(expresion){
   //this.wheres = [];
-  if(expression){
+  if(expresion){
     this.wheres.push({
-      exp: expression   
+      exp: expresion   
     });
   }
   return this;
@@ -156,7 +155,10 @@ SimpleSQLGenerator.prototype.toSQL = function(){
   var sql = ""; 
   sql += this.operation + " ";
   sql += _arrayToCSL(this.fields);
-  sql += "from "+ _arrayToCSL(this.tables.map(_from)) + " ";
+
+  sql += "from "  + this.tables.reduce(_from, "");
+  
+
   if(this.wheres.length){
     sql += "where ";
     sql += this.wheres.map(function(params, i, wheres){
