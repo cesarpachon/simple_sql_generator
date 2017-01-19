@@ -17,7 +17,11 @@ npm install simple_sql_generator
 javascript: 
 
 ```javascript
-    var sql = sqlgen
+  //load the module
+  var SQLGen = require("../src/SimpleSQLGenerator.js");
+  //create a instance of the generator
+  var sqlgen = new SQLGen.SimpleSQLGenerator();
+  var sql = sqlgen
       .select(["t1.field1", "t1.field2 as f2"])
       .from("MySchema.table1", "t1")
       .toSQL();
