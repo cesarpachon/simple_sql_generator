@@ -9,17 +9,19 @@ This is a small library in pure javascript, intended to assist with the building
 ###simple select
 
 javascript: 
-´´´
+
+```javascript
     var sql = sqlgen
       .select(["t1.field1", "t1.field2 as f2"])
       .from("MySchema.table1", "t1")
       .toSQL();
-´´´
+```
+
 SQL: 
 
-´´´
+```SQL
 select t1.field1, t1.field2 as f2 from MySchema.table1 as t1
-´´´
+```
 
 ##tests
 jasmine tests are located in the specs folder. 
