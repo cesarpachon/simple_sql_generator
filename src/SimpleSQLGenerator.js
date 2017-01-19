@@ -1,14 +1,14 @@
-
+"use strict"; 
 /**
  * array to comma separated list.
  * if quoted, strings will be quoted.
  */
 function _arrayToCSL(values, quoted){
   var s = ""; 
-  var separator = ""; 
-  values.forEach(function(val){
-    s += separator + quoted?_q(val):val;
-    separator = ",";
+  values.forEach(function(val, i, col){
+    var separator = (i < col.length-1)?", ":" ";
+    s += quoted?_q(val):val;
+    s += separator;
   });
   return s; 
 };
@@ -17,7 +17,7 @@ function _arrayToCSL(values, quoted){
  * enclose val in quotes if is a string
  * */
 function _q(val){
- return val typeof String? "'"+val+"'": val; 
+ return val instanceof String? "'"+val+"'": val; 
 }
 
 /**
@@ -41,7 +41,7 @@ function _in(params){
 function _from(table, i, tables){
   var s = _q(table.name);
   if(table.alias){
-    s+= " as " + alias; 
+    s+= " as " + table.alias; 
   }
   if(i < tables.length -1 )
     s += ", ";
@@ -80,19 +80,26 @@ SimpleSQLGenerator.prototype.from= function(table_name, alias){
 };
 
 /**
- * do nothing, but helps to visualize better the query chaining
+ * if no params, do nothing, but helps to visualize better the query chaining
+ * if params, add expresion as a literal. 
+ * can be called many times. 
 */
-SimpleSQLGenerator.prototype.where= function(){
+SimpleSQLGenerator.prototype.where= function(expresion){
   //this.wheres = [];
+  if(expression){
+    this.wheres.push({
+      exp: expression   
+    });
+  }
   return this;
 };
 
 SimpleSQLGenerator.prototype.join= function(a, b){
-  this.wheres.push(
+  this.wheres.push({
        a: a,
        b: b,
        exp: _join
-      );
+  });
   return this;
 };
 
@@ -148,12 +155,19 @@ SimpleSQLGenerator.prototype.limit = function(limit){
 SimpleSQLGenerator.prototype.toSQL = function(){
   var sql = ""; 
   sql += this.operation + " ";
-  sql += _arrayToCSL(this.fields)+ " ";
+  sql += _arrayToCSL(this.fields);
   sql += "from "+ _arrayToCSL(this.tables.map(_from)) + " ";
   if(this.wheres.length){
     sql += "where ";
     sql += this.wheres.map(function(params, i, wheres){
-      return params.exp(params) + (i<wheres.length-1?" and ":"");
+      var s = "";
+      if(params.exp instanceof Function){
+        s += params.exp(params);
+      }else{
+        s += params;
+      }
+      s += (i<wheres.length-1?" and ":"");
+      return s;
     });
     sql += " ";
   }
@@ -170,5 +184,9 @@ SimpleSQLGenerator.prototype.toSQL = function(){
     sql += _arrayToCSL(this.order_by);
     sql += " ";
   }
+  return sql.trim(); 
+};
 
+if(typeof module !== 'undefined' && module.exports){
+  module.exports.SimpleSQLGenerator = SimpleSQLGenerator; 
 };
