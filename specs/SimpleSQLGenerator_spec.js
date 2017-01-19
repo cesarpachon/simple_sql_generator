@@ -1,6 +1,5 @@
 var SQLGen = require("../src/SimpleSQLGenerator.js");
 
-
 describe("Select generation", function() {
   
   it("should generate select and single from", function() {
@@ -28,9 +27,9 @@ describe("Select generation", function() {
 
   it("should generate select with in, having and order by", function(){
     var sample = "select pic.idpicture, pic.name, pic.mime_type, pic.s3key, count(0) as relevance ";
-    sample += "from MediaLib.pictures pic, MediaLib.pictures_tags tag ";
+    sample += "from MediaLib.pictures as pic, MediaLib.pictures_tags as tag ";
     sample += "where pic.idpicture = tag.idpicture and ";
-    sample += "tag.tag in ('no_distraction','appliances', 'lamp') ";
+    sample += "tag.tag in ('no_distraction', 'appliances', 'lamp') ";
     sample += "group by pic.idpicture, pic.name, pic.mime_type, pic.s3key ";
     sample += "having relevance = 3 ";
     sample += "order by relevance desc limit 100";
@@ -42,14 +41,13 @@ describe("Select generation", function() {
       .where()
       .join("pic.idpicture", "tag.idpicture")
       .in("tag.tag", ["no_distraction", "appliances", "lamp"])
-      .group_by(["pic.idpicture", "pic.name", "pic.mime_type", "pic.s3key"])
+      .groupBy(["pic.idpicture", "pic.name", "pic.mime_type", "pic.s3key"])
       .having("relevance = 3")
-      .order_by("relevance", "desc")
+      .orderBy("relevance", "desc")
       .limit(100)
       .toSQL();
     expect(sql).toBe(sample);
   });
-
 
 });
     

@@ -17,36 +17,62 @@ function _arrayToCSL(values, quoted){
  * enclose val in quotes if is a string
  * */
 function _q(val){
- return val instanceof String? "'"+val+"'": val; 
+ return (typeof val === "string")? "'"+val+"'": val; 
 }
 
 /**
  * returns "a" = "b" 
  */ 
 function _join(params){
-  return _q(params.a) + " = " + _q(params.b); 
+  return params.a + " = " + params.b; 
 };
 
 /**
  * returns "field" in ("value1", "value2", .. )
  */
 function _in(params){
-  var s = _q(params.field) + " in (";
-  s += _arrayToCSL(params.values, true);
+  var s = params.field + " in (";
+    s = params.values.reduce(function(ac, el, i, col){
+    ac += _q(el);
+    ac += (i < col.length -1)?", ":"";
+    return ac; 
+  }, s);
   s += ")";
   return s; 
 };
 
 //returns list of "name" [as "alias"]. use with reduce.
 function _from(ac, el, i, col){
-    var s = ac + el.name; 
-    if(el.alias){
-      s += " as ";
-      s += el.alias;
-    }
-    s += (i < col.length -1)?", ":" ";
-    return s; 
+  var s = ac + el.name; 
+  if(el.alias){
+    s += " as ";
+    s += el.alias;
+  }
+  s += (i < col.length -1)?", ":" ";
+  return s; 
 }
+
+//generating where clauses. use with reduce. 
+function _wheres(s, el, i, col){
+  if(el.exp instanceof Function){
+    s += el.exp(el);
+  }else{
+    s += el;
+  }
+  s += (i<col.length-1?" and ":"");
+  return s;
+};
+
+//generate list of order by fields. use with reduce.
+function _order_by(ac, el, i, col){
+  ac += el.field;
+  if(el.mode){
+    ac += " ";
+    ac += el.mode; 
+  }
+  ac += (i<col.length-1?", ":"");
+  return ac;
+};
 
 var SimpleSQLGenerator = function(){
   this.operation = null; 
@@ -56,6 +82,7 @@ var SimpleSQLGenerator = function(){
   this.havings = []; //array of having expresions (just strings) 
   this.group_by = []; //array of fields
   this.order_by = []; //array of fields 
+  this._limit = null; //number
 };
 
 /**
@@ -93,6 +120,10 @@ SimpleSQLGenerator.prototype.where= function(expresion){
   return this;
 };
 
+/*
+ * assuming a,b are fields, not values, they are not going
+ * to be quoted
+ */
 SimpleSQLGenerator.prototype.join= function(a, b){
   this.wheres.push({
        a: a,
@@ -133,18 +164,17 @@ SimpleSQLGenerator.prototype.having = function(expresion){
 /**
  * fields: array of fields
  * mode: "desc", "asc" or null.
- * limit: numeric limit. optional
  */ 
-SimpleSQLGenerator.prototype.orderBy = function(fields, mode){
+SimpleSQLGenerator.prototype.orderBy = function(field, mode){
   this.order_by.push({
-    fields: fields,
+    field: field,
     mode: mode
   });
   return this; 
 };
 
 SimpleSQLGenerator.prototype.limit = function(limit){
-  this.limit = limit;
+  this._limit = limit;
   return this;
 };
 
@@ -158,33 +188,31 @@ SimpleSQLGenerator.prototype.toSQL = function(){
 
   sql += "from "  + this.tables.reduce(_from, "");
   
-
   if(this.wheres.length){
     sql += "where ";
-    sql += this.wheres.map(function(params, i, wheres){
-      var s = "";
-      if(params.exp instanceof Function){
-        s += params.exp(params);
-      }else{
-        s += params;
-      }
-      s += (i<wheres.length-1?" and ":"");
-      return s;
-    });
+    sql += this.wheres.reduce(_wheres, "");
     sql += " ";
   }
   if(this.group_by.length){
     sql += "group by ";
     sql += _arrayToCSL(this.group_by);
-    sql += " ";
   }
+  
   if(this.havings.length){
-    
+    sql += "having ";
+    sql += this.havings.join(" and ");
+    sql += " "; 
   }
+
   if(this.order_by.length){
     sql += "order by ";
-    sql += _arrayToCSL(this.order_by);
+    sql += this.order_by.reduce(_order_by, "");
     sql += " ";
+  }
+
+  if(this._limit){
+    sql += "limit ";
+    sql += this._limit; 
   }
   return sql.trim(); 
 };

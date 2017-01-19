@@ -28,13 +28,13 @@ select t1.field1, t1.field2 as f2 from MySchema.table1 as t1
 javascript: 
 
 ```javascript
-    var sql = sqlgen
-      .select(["t1.field1", "t1.field2 as f2"])
-      .from("MySchema.table1", "t1")
-      .from("MySchema.table2", "t2")
-      .where()
-      .join("t1.field2", "t2.field2")
-      .toSQL();
+var sql = sqlgen
+  .select(["t1.field1", "t1.field2 as f2"])
+  .from("MySchema.table1", "t1")
+  .from("MySchema.table2", "t2")
+  .where()
+  .join("t1.field2", "t2.field2")
+  .toSQL();
 ```
 
 SQL: 
@@ -46,13 +46,25 @@ select t1.field1, t1.field2 as f2 from MySchema.table1 as t1, MySchema.table2 as
 
 ###select with in, having, group by, order by, limit
 
-select pic.idpicture, pic.name, pic.mime_type, pic.s3key, count(0) as relevance 
-from MediaLib.pictures pic, MediaLib.pictures_tags tag 
-where pic.idpicture = tag.idpicture and
-tag.tag in ("no_distraction","appliances", "lamp") 
-group by pic.idpicture, pic.name, pic.mime_type, pic.s3key
-having relevance = 3
-order by relevance desc limit 100;
+```javascript
+var sql = sqlgen
+  .select(["pic.idpicture", "pic.name", "pic.mime_type", "pic.s3key", "count(0) as relevance"])
+  .from("MediaLib.pictures", "pic")
+  .from("MediaLib.pictures_tags", "tag")
+  .where()
+  .join("pic.idpicture", "tag.idpicture")
+  .in("tag.tag", ["no_distraction", "appliances", "lamp"])
+  .groupBy(["pic.idpicture", "pic.name", "pic.mime_type", "pic.s3key"])
+  .having("relevance = 3")
+  .orderBy("relevance", "desc")
+  .limit(100)
+  .toSQL();
+```
+
+```SQL
+select pic.idpicture, pic.name, pic.mime_type, pic.s3key, count(0) as relevance  from MediaLib.pictures as pic, MediaLib.pictures_tags as tag  where pic.idpicture = tag.idpicture and  tag.tag in ('no_distraction', 'appliances', 'lamp') group by pic.idpicture, pic.name, pic.mime_type, pic.s3key having relevance = 3 order by relevance desc limit 100
+```
+
 
 ##tests
 jasmine tests are located in the specs folder. 
