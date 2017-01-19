@@ -26,6 +26,31 @@ describe("Select generation", function() {
       expect(sql).toBe(sample);
   });
 
+  it("should generate select with in, having and order by", function(){
+    var sample = "select pic.idpicture, pic.name, pic.mime_type, pic.s3key, count(0) as relevance ";
+    sample += "from MediaLib.pictures pic, MediaLib.pictures_tags tag ";
+    sample += "where pic.idpicture = tag.idpicture and ";
+    sample += "tag.tag in ('no_distraction','appliances', 'lamp') ";
+    sample += "group by pic.idpicture, pic.name, pic.mime_type, pic.s3key ";
+    sample += "having relevance = 3 ";
+    sample += "order by relevance desc limit 100";
+    var sqlgen = new SQLGen.SimpleSQLGenerator();
+    var sql = sqlgen
+      .select(["pic.idpicture", "pic.name", "pic.mime_type", "pic.s3key", "count(0) as relevance"])
+      .from("MediaLib.pictures", "pic")
+      .from("MediaLib.pictures_tags", "tag")
+      .where()
+      .join("pic.idpicture", "tag.idpicture")
+      .in("tag.tag", ["no_distraction", "appliances", "lamp"])
+      .group_by(["pic.idpicture", "pic.name", "pic.mime_type", "pic.s3key"])
+      .having("relevance = 3")
+      .order_by("relevance", "desc")
+      .limit(100)
+      .toSQL();
+    expect(sql).toBe(sample);
+  });
+
+
 });
     
 
