@@ -11,9 +11,23 @@ describe("Select generation", function() {
       .toSQL();
       expect(sql).toBe(sample);
   });
+
+  it("should generate select with and and or where expresions", function() {
+    var sample = "select t1.field1, t1.field2 as f2, t1.field3 from MySchema.table1 as t1";
+    sample += " where t1.field > 0 and t1.field3 equals 'bar' or f2 is null";
+    var sqlgen = new SQLGen.SimpleSQLGenerator();
+    var sql = sqlgen
+      .select(["t1.field1", "t1.field2 as f2", "t1.field3"])
+      .from("MySchema.table1", "t1")
+      .where("t1.field", ">", 0)
+      .and("t1.field3", "equals", "bar")
+      .or("f2", "is", "null")
+      .toSQL();
+      expect(sql).toBe(sample);
+  });
   
   it("should generate select with multiple tables and a join", function() {
-    var sample = "select t1.field1, t1.field2 as f2 from MySchema.table1 as t1, MySchema.table2 as t2 where t1.field2 = t2.field2";
+    var sample = "select t1.field1, t1.field2 as f2 from MySchema.table1 as t1, MySchema.table2 as t2 where t1.field2 = t2.field2 and t1.field1 = 5 or t2.field2 is NULL";
     var sqlgen = new SQLGen.SimpleSQLGenerator();
     var sql = sqlgen
       .select(["t1.field1", "t1.field2 as f2"])
@@ -21,6 +35,8 @@ describe("Select generation", function() {
       .from("MySchema.table2", "t2")
       .where()
       .join("t1.field2", "t2.field2")
+      .and("t1.field1", "=", 5)
+      .or("t2.field2", "is", "NULL")
       .toSQL();
       expect(sql).toBe(sample);
   });

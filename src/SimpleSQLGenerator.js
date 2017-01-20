@@ -17,6 +17,9 @@ function _arrayToCSL(values, quoted){
  * enclose val in quotes if is a string
  * */
 function _q(val){
+ if(val === "null" || val === "NULL"){
+  return val;
+ }else
  return (typeof val === "string")? "'"+val+"'": val; 
 }
 
@@ -41,6 +44,18 @@ function _in(params){
   return s; 
 };
 
+function _expr(params){
+  return params.field+" "+params.operator+" "+_q(params.value);
+}
+
+function _and(params){
+ return " and " + _expr(params);
+};
+
+function _or(params){
+  return " or " + _expr(params);
+};
+
 //returns list of "name" [as "alias"]. use with reduce.
 function _from(ac, el, i, col){
   var s = ac + el.name; 
@@ -53,14 +68,22 @@ function _from(ac, el, i, col){
 }
 
 //generating where clauses. use with reduce. 
-function _wheres(s, el, i, col){
+function _wheres(acc, el, i, col){
+  var s; 
   if(el.exp instanceof Function){
-    s += el.exp(el);
+    s = el.exp(el);
   }else{
-    s += el;
+    s = el;
   }
-  s += (i<col.length-1?" and ":"");
-  return s;
+  if(i > 0){ //needs conector prefix
+    if(s.indexOf(" and ") === 0 || s.indexOf(" or ")=== 0){
+     //already has conector. skip.
+    }else{
+      s = " and " + s;   
+    }
+  }
+  //  s += (i<col.length-1?" and ":"");
+  return acc + s;
 };
 
 //generate list of order by fields. use with reduce.
@@ -110,11 +133,14 @@ SimpleSQLGenerator.prototype.from= function(table_name, alias){
  * if params, add expresion as a literal. 
  * can be called many times. 
 */
-SimpleSQLGenerator.prototype.where= function(expresion){
+SimpleSQLGenerator.prototype.where= function(field, operator, value){
   //this.wheres = [];
-  if(expresion){
+  if(field && operator){
     this.wheres.push({
-      exp: expresion   
+      field: field,
+      operator: operator,
+      value: value,
+      exp: _expr   
     });
   }
   return this;
@@ -144,6 +170,26 @@ SimpleSQLGenerator.prototype.in = function(field, values){
     exp: _in
   });
   return this;
+};
+
+SimpleSQLGenerator.prototype.and = function(field, operator, value){
+ this.wheres.push({
+  field: field,
+  operator: operator,
+  value: value,
+  exp: _and
+ });
+ return this;
+};
+
+SimpleSQLGenerator.prototype.or = function(field, operator, value){
+ this.wheres.push({
+  field: field,
+  operator: operator,
+  value: value,
+  exp: _or
+ });
+ return this;
 };
 
 /*

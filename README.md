@@ -18,7 +18,7 @@ javascript:
 
 ```javascript
   //load the module
-  var SQLGen = require("../src/SimpleSQLGenerator.js");
+  var SQLGen = require("SimpleSQLGenerator.js");
   //create a instance of the generator
   var sqlgen = new SQLGen.SimpleSQLGenerator();
   var sql = sqlgen
