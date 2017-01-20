@@ -68,7 +68,7 @@ describe("Select generation", function() {
       .join("pic.idpicture", "tag.idpicture")
       .in("tag.tag", ["no_distraction", "appliances", "lamp"])
       .groupBy(["pic.idpicture", "pic.name", "pic.mime_type", "pic.s3key"])
-      .having("relevance = 3")
+      .having("relevance", "=", 3)
       .orderBy("relevance", "desc")
       .limit(100)
       .toSQL();

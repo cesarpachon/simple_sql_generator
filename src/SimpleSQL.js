@@ -102,12 +102,19 @@ function _order_by(ac, el, i, col){
   return ac;
 };
 
+//reduce for having expresions
+function _having(ac, el, i, col){
+  ac += _expr(el);
+  ac += (i<col.length-1?" and ":"");
+  return ac;
+};
+
 SimpleSQL.Generator = function(){
   this.operation = null; 
   this.fields = [];
   this.tables = [];
   this.wheres = []; //array of where expresions (objects) 
-  this.havings = []; //array of having expresions (just strings) 
+  this.havings = []; //array of having expresions (field, operator, val) 
   this.group_by = []; //array of fields
   this.order_by = []; //array of fields 
   this.offset = -1; //means not present in the sql
@@ -210,8 +217,12 @@ SimpleSQL.Generator.prototype.groupBy= function(fields){
 };
 
 //adds an expresion to the having clause
-SimpleSQL.Generator.prototype.having = function(expresion){
- this.havings.push(expresion);
+SimpleSQL.Generator.prototype.having = function(field, operator, value){
+ this.havings.push({
+  field: field,
+  operator: operator,
+  value: value
+ });
  return this; 
 };
 
@@ -268,7 +279,7 @@ SimpleSQL.Generator.prototype.toSQL = function(){
   
   if(this.havings.length){
     sql += "having ";
-    sql += this.havings.join(" and ");
+    sql += this.havings.reduce(_having, "");
     sql += " "; 
   }
 
