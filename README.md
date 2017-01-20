@@ -22,6 +22,26 @@ javascript:
   //create a instance of the generator
   var sqlgen = new SimpleSQL.Generator();
   var sql = sqlgen
+      .select()
+      .from("MySchema.table1", "t1")
+      .toSQL();
+```
+
+SQL: 
+
+```SQL
+select * from MySchema.table1 as t1
+```
+###specifying fields
+
+javascript: 
+
+```javascript
+  //load the module
+  var SimpleSQL = require("SimpleSQL.js");
+  //create a instance of the generator
+  var sqlgen = new SimpleSQL.Generator();
+  var sql = sqlgen
       .select(["t1.field1", "t1.field2 as f2"])
       .from("MySchema.table1", "t1")
       .toSQL();
@@ -32,6 +52,7 @@ SQL:
 ```SQL
 select t1.field1, t1.field2 as f2 from MySchema.table1 as t1
 ```
+
 
 ###simple join
 

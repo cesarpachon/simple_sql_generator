@@ -2,6 +2,16 @@ var SimpleSQL = require("../src/SimpleSQL.js");
 
 describe("Select generation", function() {
   
+  it("should generate select *", function() {
+    var sample = "select * from MySchema.table1 as t1";
+    var sqlgen = new SimpleSQL.Generator();
+    var sql = sqlgen
+      .select()
+      .from("MySchema.table1", "t1")
+      .toSQL();
+      expect(sql).toBe(sample);
+  });
+
   it("should generate select and single from", function() {
     var sample = "select t1.field1, t1.field2 as f2 from MySchema.table1 as t1";
     var sqlgen = new SimpleSQL.Generator();

@@ -116,13 +116,16 @@ SimpleSQL.Generator = function(){
 
 /**
  * @param fields: {Array} of strings
- */
+ * or no params to produce "select *"
+ * */
 SimpleSQL.Generator.prototype.select = function(fields){
   var _self = this; 
   this.operation = "select"; 
-  fields.forEach(function(field){
-    _self.fields.push(field); 
-  });
+  if(fields){
+    fields.forEach(function(field){
+      _self.fields.push(field); 
+    });
+  }
   return this; 
 };
 
@@ -245,7 +248,11 @@ SimpleSQL.Generator.prototype.limit = function(offset, limit){
 SimpleSQL.Generator.prototype.toSQL = function(){
   var sql = ""; 
   sql += this.operation + " ";
-  sql += _arrayToCSL(this.fields);
+  if(this.fields && this.fields.length){
+    sql += _arrayToCSL(this.fields);
+  }else{
+    sql += "* "; 
+  }
 
   sql += "from "  + this.tables.reduce(_from, "");
   
