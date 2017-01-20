@@ -1,8 +1,8 @@
 {
   "name": "simple_sql_generator",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A simple javascript library to help build sql queries",
-  "main": "src/SimpleSQLGenerator.js",
+  "main": "src/SimpleSQL.js",
   "scripts": {
     "test": "jasmine-node specs/"
   },

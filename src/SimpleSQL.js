@@ -1,4 +1,9 @@
 "use strict"; 
+
+var SimpleSQL = (function(){
+
+ var SimpleSQL = {};
+
 /**
  * array to comma separated list.
  * if quoted, strings will be quoted.
@@ -97,7 +102,7 @@ function _order_by(ac, el, i, col){
   return ac;
 };
 
-var SimpleSQLGenerator = function(){
+SimpleSQL.Generator = function(){
   this.operation = null; 
   this.fields = [];
   this.tables = [];
@@ -105,13 +110,14 @@ var SimpleSQLGenerator = function(){
   this.havings = []; //array of having expresions (just strings) 
   this.group_by = []; //array of fields
   this.order_by = []; //array of fields 
+  this.offset = -1; //means not present in the sql
   this._limit = null; //number
 };
 
 /**
  * @param fields: {Array} of strings
  */
-SimpleSQLGenerator.prototype.select = function(fields){
+SimpleSQL.Generator.prototype.select = function(fields){
   var _self = this; 
   this.operation = "select"; 
   fields.forEach(function(field){
@@ -120,7 +126,7 @@ SimpleSQLGenerator.prototype.select = function(fields){
   return this; 
 };
 
-SimpleSQLGenerator.prototype.from= function(table_name, alias){
+SimpleSQL.Generator.prototype.from= function(table_name, alias){
   this.tables.push({
     name: table_name,
     alias: alias
@@ -133,7 +139,7 @@ SimpleSQLGenerator.prototype.from= function(table_name, alias){
  * if params, add expresion as a literal. 
  * can be called many times. 
 */
-SimpleSQLGenerator.prototype.where= function(field, operator, value){
+SimpleSQL.Generator.prototype.where= function(field, operator, value){
   //this.wheres = [];
   if(field && operator){
     this.wheres.push({
@@ -150,7 +156,7 @@ SimpleSQLGenerator.prototype.where= function(field, operator, value){
  * assuming a,b are fields, not values, they are not going
  * to be quoted
  */
-SimpleSQLGenerator.prototype.join= function(a, b){
+SimpleSQL.Generator.prototype.join= function(a, b){
   this.wheres.push({
        a: a,
        b: b,
@@ -163,7 +169,7 @@ SimpleSQLGenerator.prototype.join= function(a, b){
  * @param field: {String}
  * @param values: {Array}
  */ 
-SimpleSQLGenerator.prototype.in = function(field, values){
+SimpleSQL.Generator.prototype.in = function(field, values){
   this.wheres.push({
     field: field,
     values: values,
@@ -172,7 +178,7 @@ SimpleSQLGenerator.prototype.in = function(field, values){
   return this;
 };
 
-SimpleSQLGenerator.prototype.and = function(field, operator, value){
+SimpleSQL.Generator.prototype.and = function(field, operator, value){
  this.wheres.push({
   field: field,
   operator: operator,
@@ -182,7 +188,7 @@ SimpleSQLGenerator.prototype.and = function(field, operator, value){
  return this;
 };
 
-SimpleSQLGenerator.prototype.or = function(field, operator, value){
+SimpleSQL.Generator.prototype.or = function(field, operator, value){
  this.wheres.push({
   field: field,
   operator: operator,
@@ -195,13 +201,13 @@ SimpleSQLGenerator.prototype.or = function(field, operator, value){
 /*
  * 
  */
-SimpleSQLGenerator.prototype.groupBy= function(fields){
+SimpleSQL.Generator.prototype.groupBy= function(fields){
  this.group_by = fields; 
  return this; 
 };
 
 //adds an expresion to the having clause
-SimpleSQLGenerator.prototype.having = function(expresion){
+SimpleSQL.Generator.prototype.having = function(expresion){
  this.havings.push(expresion);
  return this; 
 };
@@ -211,7 +217,7 @@ SimpleSQLGenerator.prototype.having = function(expresion){
  * fields: array of fields
  * mode: "desc", "asc" or null.
  */ 
-SimpleSQLGenerator.prototype.orderBy = function(field, mode){
+SimpleSQL.Generator.prototype.orderBy = function(field, mode){
   this.order_by.push({
     field: field,
     mode: mode
@@ -219,15 +225,24 @@ SimpleSQLGenerator.prototype.orderBy = function(field, mode){
   return this; 
 };
 
-SimpleSQLGenerator.prototype.limit = function(limit){
-  this._limit = limit;
+/** 
+ * if passed a single parameter, it will be taken as limit, and 
+ * offset will not be generated in the query. 
+ */
+SimpleSQL.Generator.prototype.limit = function(offset, limit){
+  if(arguments.length === 1){
+    this._limit = offset; 
+  }else{
+    this.offset = offset; 
+    this._limit = limit;
+  }
   return this;
 };
 
 /*
  * generate a SQL string using the current state of the object.  
  */
-SimpleSQLGenerator.prototype.toSQL = function(){
+SimpleSQL.Generator.prototype.toSQL = function(){
   var sql = ""; 
   sql += this.operation + " ";
   sql += _arrayToCSL(this.fields);
@@ -258,11 +273,19 @@ SimpleSQLGenerator.prototype.toSQL = function(){
 
   if(this._limit){
     sql += "limit ";
+    if(this.offset > -1){
+      sql += this.offset + ", ";
+    }
     sql += this._limit; 
   }
   return sql.trim(); 
 };
 
+return SimpleSQL;
+
+})();
+
+//for Node.js
 if(typeof module !== 'undefined' && module.exports){
-  module.exports.SimpleSQLGenerator = SimpleSQLGenerator; 
+  module.exports.Generator = SimpleSQL.Generator; 
 };

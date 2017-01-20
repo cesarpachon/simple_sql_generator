@@ -18,9 +18,9 @@ javascript:
 
 ```javascript
   //load the module
-  var SQLGen = require("SimpleSQLGenerator.js");
+  var SimpleSQL = require("SimpleSQL.js");
   //create a instance of the generator
-  var sqlgen = new SQLGen.SimpleSQLGenerator();
+  var sqlgen = new SimpleSQL.Generator();
   var sql = sqlgen
       .select(["t1.field1", "t1.field2 as f2"])
       .from("MySchema.table1", "t1")
