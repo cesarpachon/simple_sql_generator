@@ -11,7 +11,7 @@ var SimpleSQL = (function(){
 function _arrayToCSL(values, quoted){
   var s = ""; 
   values.forEach(function(val, i, col){
-    var separator = (i < col.length-1)?", ":" ";
+    var separator = (i < col.length-1)?", ":"";
     s += quoted?_q(val):val;
     s += separator;
   });
@@ -119,6 +119,7 @@ SimpleSQL.Generator = function(){
   this.order_by = []; //array of fields 
   this.offset = -1; //means not present in the sql
   this._limit = null; //number
+  this._values = [];
 };
 
 /**
@@ -135,6 +136,44 @@ SimpleSQL.Generator.prototype.select = function(fields){
   }
   return this; 
 };
+
+/*
+ * if called as table_name, fields(array of strings): will set the table name
+ * if no table_name (first arg is an array) will APPEND the fields
+ * so you can call it multiple times to append new fields.
+ * @see values
+ */
+SimpleSQL.Generator.prototype.insertInto = function(table_name, fields){
+  var _self = this;
+  this.operation = "insert"; 
+  if(typeof table_name === "string" && fields){
+    this.tables = [table_name];
+  }else{
+    //invokated as insertInto(array) 
+    fields = table_name; 
+  }
+  fields.forEach(function(field){
+    _self.fields.push(field);  
+  });
+  return this;
+}
+
+/**
+ * values: array of json objects, with attributes expected to match
+ * the fields array (@see insertInto).
+ * multiple calls to values will append to the existing collection. 
+* if called with empty arguments, will return the internal values
+* array, for direct manipulation. 
+*/
+SimpleSQL.Generator.prototype.values = function(values){
+  if(!values){
+    return this._values; 
+  }
+  this._values = this._values.concat(values); 
+  return this; 
+}
+
+
 
 SimpleSQL.Generator.prototype.from= function(table_name, alias){
   this.tables.push({
@@ -253,20 +292,18 @@ SimpleSQL.Generator.prototype.limit = function(offset, limit){
   return this;
 };
 
-/*
- * generate a SQL string using the current state of the object.  
- */
-SimpleSQL.Generator.prototype.toSQL = function(){
+/**
+ * @private
+ */ 
+SimpleSQL.Generator.prototype._select_toSQL = function(){
   var sql = ""; 
   sql += this.operation + " ";
   if(this.fields && this.fields.length){
     sql += _arrayToCSL(this.fields);
   }else{
-    sql += "* "; 
+    sql += "*"; 
   }
-
-  sql += "from "  + this.tables.reduce(_from, "");
-  
+  sql += " from "  + this.tables.reduce(_from, "");
   if(this.wheres.length){
     sql += "where ";
     sql += this.wheres.reduce(_wheres, "");
@@ -276,19 +313,16 @@ SimpleSQL.Generator.prototype.toSQL = function(){
     sql += "group by ";
     sql += _arrayToCSL(this.group_by);
   }
-  
   if(this.havings.length){
-    sql += "having ";
+    sql += " having ";
     sql += this.havings.reduce(_having, "");
     sql += " "; 
   }
-
   if(this.order_by.length){
     sql += "order by ";
     sql += this.order_by.reduce(_order_by, "");
     sql += " ";
   }
-
   if(this._limit){
     sql += "limit ";
     if(this.offset > -1){
@@ -297,6 +331,49 @@ SimpleSQL.Generator.prototype.toSQL = function(){
     sql += this._limit; 
   }
   return sql.trim(); 
+};
+
+/**
+ * @private
+ */ 
+SimpleSQL.Generator.prototype._insert_toSQL = function(){
+  var _self = this; 
+  var sql = "insert into "+ this.tables[0]; 
+  sql += " (";
+  sql += _arrayToCSL(this.fields);
+  sql += ") values (";
+  if(this.fields.length ===1){
+    var field_name = this.fields[0];
+    //generate an array of unquoted strings
+    var single_fields = this._values.map(function(el){
+      return el[field_name];
+    });
+    sql += _arrayToCSL(single_fields, true); 
+  }else{
+
+    this._values.forEach(function(value, i){
+      var row_vals = _self.fields.map(function(field){
+        return value[field]; 
+      });
+      if(i>0){
+        sql += ", ";
+      }
+      sql += "(" + _arrayToCSL(row_vals, true) + ")";
+    });
+  } 
+  sql += ")";
+  return sql; 
+};
+
+/*
+ * generate a SQL string using the current state of the object.  
+ */
+SimpleSQL.Generator.prototype.toSQL = function(){
+  if(this.operation === "select"){
+    return this._select_toSQL();
+  }else if(this.operation === "insert"){
+    return this._insert_toSQL();
+  }
 };
 
 return SimpleSQL;

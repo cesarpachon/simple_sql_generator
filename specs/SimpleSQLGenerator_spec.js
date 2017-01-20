@@ -74,7 +74,65 @@ describe("Select generation", function() {
       .toSQL();
     expect(sql).toBe(sample);
   });
+});
 
+describe("Insert generation", function() {
+  it("should support inserts with single field", function(){
+   var sample = "insert into t1 (f1) values ('v1', 'v2', 'v3')";
+    var sqlgen = new SimpleSQL.Generator();
+    var sql = sqlgen
+      .insertInto("t1", ["f1"])
+      .values([{f1:"v1"}, {f1:"v2"}, {f1:"v3"}])
+      .toSQL();
+    expect(sql).toBe(sample);
+  });
+  
+  it("should support inserts with multiple fields", function(){
+   var sample = "insert into t1 (f1, f2) values (('v11', 'v12'), ('v21', 'v22'))";
+    var sqlgen = new SimpleSQL.Generator();
+    var sql = sqlgen
+      .insertInto("t1", ["f1", "f2"])
+      .values([{f1:"v11", f2:"v12"}, {f1:"v21", f2:"v22"}])
+      .toSQL();
+    expect(sql).toBe(sample);
+  });
+
+  it("should support inserts with delayed fields", function(){
+   var sample = "insert into t1 (f1, f2) values (('v11', 'v12'), ('v21', 'v22'))";
+    var sqlgen = new SimpleSQL.Generator();
+    sqlgen
+      .insertInto("t1", ["f1"]);
+    var sql = sqlgen.insertInto(["f2"])
+      .values([{f1:"v11", f2:"v12"}, {f1:"v21", f2:"v22"}])
+      .toSQL();
+      expect(sql).toBe(sample);
+  });
+
+  it("should support inserts with delayed values", function(){
+   var sample = "insert into t1 (f1, f2) values (('v11', 'v12'), ('v21', 'v22'))";
+    var sqlgen = new SimpleSQL.Generator();
+    sqlgen
+      .insertInto("t1", ["f1", "f2"])
+      .values([{f1:"v11", f2:"v12"}]);
+     var sql = sqlgen.values([{f1:"v21", f2:"v22"}])
+      .toSQL();
+    expect(sql).toBe(sample);
+  });
+  
+  it("should support inserts with delayed fields and values", function(){
+   var sample = "insert into t1 (f1, f2) values (('v11', 'v21'), ('v12', 'v22'))";
+    var sqlgen = new SimpleSQL.Generator();
+    sqlgen
+      .insertInto("t1", ["f1"])
+      .values([{f1:"v11"}, {f1: "v12"}]);
+    sqlgen.insertInto(["f2"]);
+    //passing no arguments will return the internal values array
+    sqlgen.values().forEach(function(val, i){
+      val.f2 = "v2"+(i+1);
+    });
+     var sql = sqlgen.toSQL();
+    expect(sql).toBe(sample);
+  });
 });
     
 
