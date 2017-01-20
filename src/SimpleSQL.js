@@ -341,14 +341,16 @@ SimpleSQL.Generator.prototype._insert_toSQL = function(){
   var sql = "insert into "+ this.tables[0]; 
   sql += " (";
   sql += _arrayToCSL(this.fields);
-  sql += ") values (";
+  sql += ") values ";
   if(this.fields.length ===1){
     var field_name = this.fields[0];
     //generate an array of unquoted strings
     var single_fields = this._values.map(function(el){
       return el[field_name];
     });
-    sql += _arrayToCSL(single_fields, true); 
+    sql += "(";
+    sql += _arrayToCSL(single_fields, true);
+    sql += ")";
   }else{
 
     this._values.forEach(function(value, i){
@@ -361,7 +363,6 @@ SimpleSQL.Generator.prototype._insert_toSQL = function(){
       sql += "(" + _arrayToCSL(row_vals, true) + ")";
     });
   } 
-  sql += ")";
   return sql; 
 };
 

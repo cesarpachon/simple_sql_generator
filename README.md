@@ -214,5 +214,7 @@ insert into t1 (f1, f2) values (('v11', 'v21'), ('v12', 'v22'))
 ```
 jasmine tests are located in the specs folder. 
 run them with: 
+```bash
 jasmine-node specs/
+```
 

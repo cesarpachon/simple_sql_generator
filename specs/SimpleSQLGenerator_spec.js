@@ -88,7 +88,7 @@ describe("Insert generation", function() {
   });
   
   it("should support inserts with multiple fields", function(){
-   var sample = "insert into t1 (f1, f2) values (('v11', 'v12'), ('v21', 'v22'))";
+   var sample = "insert into t1 (f1, f2) values ('v11', 'v12'), ('v21', 'v22')";
     var sqlgen = new SimpleSQL.Generator();
     var sql = sqlgen
       .insertInto("t1", ["f1", "f2"])
@@ -98,7 +98,7 @@ describe("Insert generation", function() {
   });
 
   it("should support inserts with delayed fields", function(){
-   var sample = "insert into t1 (f1, f2) values (('v11', 'v12'), ('v21', 'v22'))";
+   var sample = "insert into t1 (f1, f2) values ('v11', 'v12'), ('v21', 'v22')";
     var sqlgen = new SimpleSQL.Generator();
     sqlgen
       .insertInto("t1", ["f1"]);
@@ -109,7 +109,7 @@ describe("Insert generation", function() {
   });
 
   it("should support inserts with delayed values", function(){
-   var sample = "insert into t1 (f1, f2) values (('v11', 'v12'), ('v21', 'v22'))";
+   var sample = "insert into t1 (f1, f2) values ('v11', 'v12'), ('v21', 'v22')";
     var sqlgen = new SimpleSQL.Generator();
     sqlgen
       .insertInto("t1", ["f1", "f2"])
@@ -120,7 +120,7 @@ describe("Insert generation", function() {
   });
   
   it("should support inserts with delayed fields and values", function(){
-   var sample = "insert into t1 (f1, f2) values (('v11', 'v21'), ('v12', 'v22'))";
+   var sample = "insert into t1 (f1, f2) values ('v11', 'v21'), ('v12', 'v22')";
     var sqlgen = new SimpleSQL.Generator();
     sqlgen
       .insertInto("t1", ["f1"])
