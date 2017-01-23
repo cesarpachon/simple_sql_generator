@@ -175,7 +175,16 @@ SimpleSQL.Generator.prototype.update = function(table_name){
  *
  */ 
 SimpleSQL.Generator.prototype.set = function(field, value){
-  this._update_set[field] = value; 
+  var _self = this; 
+  if(typeof field === "string"){ 
+    //expects string, val. @todo: validations
+    this._update_set[field] = value; 
+  }else{
+    //expects an object. @todo: validate
+   Object.keys(field).forEach(function(key){
+    _self._update_set[key] = field[key];
+   }); 
+  }  
   return this; 
 }
 

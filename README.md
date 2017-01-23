@@ -214,10 +214,19 @@ insert into t1 (f1, f2) values (('v11', 'v21'), ('v12', 'v22'))
 ##updates
 
 ```javascript
+//set fields one by one
 sqlgen.update("t1")
   .set("f1", "val1") 
   .set("f2", "val2") 
   .set("f3", "val3")
+  .where("f1", "=", "abc")
+  .and("f4", "is", "null");
+
+//or set fields passing an object (can be mixed)
+sqlgen.update("t1")
+  .set("f1", "val1") 
+  .set({f2:"val2", ) 
+    f3:"val3"})
   .where("f1", "=", "abc")
   .and("f4", "is", "null");
 ```

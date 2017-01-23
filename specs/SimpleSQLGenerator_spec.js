@@ -152,4 +152,16 @@ describe("Update generation", function() {
        var sql = sqlgen.toSQL();
        expect(sql).toBe(sample);
     });
+    it("should generate update with object assignment", function(){
+      var sample = "update t1 set f1 = 'val1', f2 = 'val2', f3 = 'val3' where f1 = 'abc' and f4 is null";
+      var sqlgen = new SimpleSQL.Generator();
+      sqlgen.update("t1")
+        .set("f1", "val1") 
+        .set({f2: "val2",
+              f3: "val3"}) 
+        .where("f1", "=", "abc")
+        .and("f4", "is", "null");
+       var sql = sqlgen.toSQL();
+       expect(sql).toBe(sample);
+    });
 });
