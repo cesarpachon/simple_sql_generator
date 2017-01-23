@@ -190,7 +190,6 @@ sqlgen
 ```SQL
 insert into t1 (f1, f2) values (('v11', 'v12'), ('v21', 'v22'))
 ```
-##tests
 
 ###insert with delayed fields and values
 
@@ -212,6 +211,23 @@ sqlgen.values().forEach(function(val, i){
 ```SQL
 insert into t1 (f1, f2) values (('v11', 'v21'), ('v12', 'v22'))
 ```
+##updates
+
+```javascript
+sqlgen.update("t1")
+  .set("f1", "val1") 
+  .set("f2", "val2") 
+  .set("f3", "val3")
+  .where("f1", "=", "abc")
+  .and("f4", "is", "null");
+```
+
+```SQL
+update t1 set f1 = 'val1', f2 = 'val2', f3 = 'val3' where f1 = 'abc' and f4 is null
+```
+
+
+##tests
 jasmine tests are located in the specs folder. 
 run them with: 
 ```bash

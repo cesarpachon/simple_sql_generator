@@ -120,6 +120,7 @@ SimpleSQL.Generator = function(){
   this.offset = -1; //means not present in the sql
   this._limit = null; //number
   this._values = [];
+  this._update_set = null;
 };
 
 /**
@@ -156,6 +157,26 @@ SimpleSQL.Generator.prototype.insertInto = function(table_name, fields){
     _self.fields.push(field);  
   });
   return this;
+}
+
+/*
+ */
+SimpleSQL.Generator.prototype.update = function(table_name){
+  this.operation = "update"; 
+  this.tables = [table_name];
+  this._update_set = {};
+  return this; 
+}
+
+/**
+ * set fields for update operations.
+ * support the following modes: 
+ * - one by one: set(field, value) 
+ *
+ */ 
+SimpleSQL.Generator.prototype.set = function(field, value){
+  this._update_set[field] = value; 
+  return this; 
 }
 
 /**
@@ -330,9 +351,7 @@ SimpleSQL.Generator.prototype._select_toSQL = function(){
     }
     sql += this._limit; 
   }
-  //a last attempt to fix duplicated spaces
-  sql = sql.replace("  ", " ");
-  return sql.trim(); 
+  return sql; 
 };
 
 /**
@@ -368,15 +387,41 @@ SimpleSQL.Generator.prototype._insert_toSQL = function(){
   return sql; 
 };
 
+/**
+ * @private
+ */ 
+SimpleSQL.Generator.prototype._update_toSQL = function(){
+  var _self = this; 
+  var sql = "update " + this.tables[0] + " set ";
+  sql += Object.keys(this._update_set).map(function(field){
+    return field + " = "+ _q(_self._update_set[field]);
+  }).join(", ");
+  if(this.wheres.length){
+    sql += " where ";
+    sql += this.wheres.reduce(_wheres, "");
+    sql += " ";
+  }
+  return sql; 
+};
+
 /*
  * generate a SQL string using the current state of the object.  
  */
 SimpleSQL.Generator.prototype.toSQL = function(){
+  var sql = null; 
   if(this.operation === "select"){
-    return this._select_toSQL();
+    sql=  this._select_toSQL();
   }else if(this.operation === "insert"){
-    return this._insert_toSQL();
+    sql = this._insert_toSQL();
+  }if(this.operation === "update"){
+    sql = this._update_toSQL();
   }
+  //a last attempt to fix duplicated spaces
+  if(sql){
+    sql = sql.replace("  ", " ");
+    sql = sql.trim();
+  }
+  return sql; 
 };
 
 return SimpleSQL;
