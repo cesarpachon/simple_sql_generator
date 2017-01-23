@@ -319,7 +319,7 @@ SimpleSQL.Generator.prototype._select_toSQL = function(){
     sql += " "; 
   }
   if(this.order_by.length){
-    sql += "order by ";
+    sql += " order by ";
     sql += this.order_by.reduce(_order_by, "");
     sql += " ";
   }
@@ -330,6 +330,8 @@ SimpleSQL.Generator.prototype._select_toSQL = function(){
     }
     sql += this._limit; 
   }
+  //a last attempt to fix duplicated spaces
+  sql = sql.replace("  ", " ");
   return sql.trim(); 
 };
 
