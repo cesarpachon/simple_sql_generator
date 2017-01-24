@@ -164,4 +164,16 @@ describe("Update generation", function() {
        var sql = sqlgen.toSQL();
        expect(sql).toBe(sample);
     });
+
+describe("Delete generation", function(){
+  it("should generate simple delete", function(){
+    var sample = 'delete from pictures_tags where idpicture = 24';
+    var sqlgen = new SimpleSQL.Generator();
+    sqlgen.deleteFrom("pictures_tags")
+      .where("idpicture", "=", 24);
+    var sql = sqlgen.toSQL();
+    expect(sql).toBe(sample);
+  });
+});
+
 });

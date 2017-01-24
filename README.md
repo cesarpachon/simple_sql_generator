@@ -235,6 +235,16 @@ sqlgen.update("t1")
 update t1 set f1 = 'val1', f2 = 'val2', f3 = 'val3' where f1 = 'abc' and f4 is null
 ```
 
+##delete
+
+```javascript
+sqlgen.deleteFrom("pictures_tags")
+  .where("idpicture", "=", 24);
+```
+
+```SQL
+delete from pictures_tags where idpicture = 24
+```
 
 ##tests
 jasmine tests are located in the specs folder. 

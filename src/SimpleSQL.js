@@ -169,6 +169,15 @@ SimpleSQL.Generator.prototype.update = function(table_name){
 }
 
 /**
+ *
+ */ 
+SimpleSQL.Generator.prototype.deleteFrom = function(table_name){
+  this.operation = "delete"; 
+  this.tables = [table_name];
+  return this; 
+}
+
+/**
  * set fields for update operations.
  * support the following modes: 
  * - one by one: set(field, value) 
@@ -413,6 +422,21 @@ SimpleSQL.Generator.prototype._update_toSQL = function(){
   return sql; 
 };
 
+
+/**
+ * @private
+ */ 
+SimpleSQL.Generator.prototype._delete_toSQL = function(){
+  var _self = this; 
+  var sql = "delete from "+ this.tables[0]; 
+  if(this.wheres.length){
+    sql += " where ";
+    sql += this.wheres.reduce(_wheres, "");
+    sql += " ";
+  }
+  return sql;
+}
+
 /*
  * generate a SQL string using the current state of the object.  
  */
@@ -422,8 +446,10 @@ SimpleSQL.Generator.prototype.toSQL = function(){
     sql=  this._select_toSQL();
   }else if(this.operation === "insert"){
     sql = this._insert_toSQL();
-  }if(this.operation === "update"){
+  }else if(this.operation === "update"){
     sql = this._update_toSQL();
+  }else if(this.operation === "delete"){
+    sql = this._delete_toSQL();
   }
   //a last attempt to fix duplicated spaces
   if(sql){
