@@ -21,7 +21,6 @@ describe("Sample queries 02", function() {
      .toSQL();
    expect(sql).toBe(sample);
   });
-
   it("should match the query 2", function(){
    var sample = "insert into picture_comments (idpicture, score, comment) values (890, 20, 'not so good')";
    var sqlgen = new SimpleSQL.Generator();
@@ -31,5 +30,4 @@ describe("Sample queries 02", function() {
      .toSQL();
    expect(sql).toBe(sample);
   });
-
 });

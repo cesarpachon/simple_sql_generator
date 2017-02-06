@@ -24,8 +24,18 @@ function _arrayToCSL(values, quoted){
 function _q(val){
  if(val === "null" || val === "NULL"){
   return val;
- }else
- return (typeof val === "string")? "'"+val+"'": val; 
+ }else{
+  if(typeof val === "string"){
+    //avoid quoting if the string is already enclosed
+    if(val.charAt(0) === "'" &&
+        val.charAt(val.length-1) === "'"){
+      return val;
+    }else{
+      return "'"+val+"'"; 
+    }
+  }
+  return val; 
+ }
 }
 
 /**
@@ -435,7 +445,7 @@ SimpleSQL.Generator.prototype._delete_toSQL = function(){
     sql += " ";
   }
   return sql;
-}
+};
 
 /*
  * generate a SQL string using the current state of the object.  
