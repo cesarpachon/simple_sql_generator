@@ -30,4 +30,13 @@ describe("Sample queries 02", function() {
      .toSQL();
    expect(sql).toBe(sample);
   });
+  it("should support text values with single quotes within", function(){
+   var sample = "insert into picture_comments (idpicture, score, comment) values (890, 20, 'I am at mom\\'s')";
+   var sqlgen = new SimpleSQL.Generator();
+   var sql = sqlgen
+     .insertInto("picture_comments", ["idpicture", "score", "comment"])
+     .values([{idpicture: 890, score: 20, comment:"I am at mom's"}])
+     .toSQL();
+   expect(sql).toBe(sample);
+  });
 });

@@ -29,8 +29,10 @@ function _q(val){
     //avoid quoting if the string is already enclosed
     if(val.charAt(0) === "'" &&
         val.charAt(val.length-1) === "'"){
-      return val;
+        return val;
     }else{
+      //escape single character within 
+      val = val.replace("'", "\\'");
       return "'"+val+"'"; 
     }
   }
