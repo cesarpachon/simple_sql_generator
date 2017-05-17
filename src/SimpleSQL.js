@@ -403,7 +403,10 @@ SimpleSQL.Generator.prototype._insert_toSQL = function(){
     sql += _arrayToCSL(single_fields, true);
     sql += ")";
   }else{
-
+    if(!this._values.length){
+      sql += "( )";
+      return sql; 
+    }
     this._values.forEach(function(value, i){
       var row_vals = _self.fields.map(function(field){
         return value[field]; 
