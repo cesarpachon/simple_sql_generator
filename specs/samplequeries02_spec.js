@@ -6,7 +6,7 @@ var SimpleSQL = require("../src/SimpleSQL.js");
  * all works as expected
  */
 describe("Sample queries 02", function() {
-
+/*
   it("should match the query 1", function(){
    var sample = "select idpicture, avg(score) as total_score, count(0) as total_comments ";
    sample += "from picture_comments where idpicture in (0, 1, 2) group by idpicture order by idpicture desc limit 100"; 
@@ -21,6 +21,7 @@ describe("Sample queries 02", function() {
      .toSQL();
    expect(sql).toBe(sample);
   });
+
   it("should match the query 2", function(){
    var sample = "insert into picture_comments (idpicture, score, comment) values (890, 20, 'not so good')";
    var sqlgen = new SimpleSQL.Generator();
@@ -30,6 +31,7 @@ describe("Sample queries 02", function() {
      .toSQL();
    expect(sql).toBe(sample);
   });
+
   it("should support text values with single quotes within", function(){
    var sample = "insert into picture_comments (idpicture, score, comment) values (890, 20, 'I am at mom\\'s')";
    var sqlgen = new SimpleSQL.Generator();
@@ -39,4 +41,17 @@ describe("Sample queries 02", function() {
      .toSQL();
    expect(sql).toBe(sample);
   });
+*/
+  it("it should generate valid subquery", () =>{
+   var sample = "select * from users where userid in ( select distinct(iduser) as userid from bank_accounts ) limit 0, 10";
+   var sqlgen = new SimpleSQL.Generator();
+   var sql = sqlgen
+     .select()
+     .from("users")
+     .where("userid", "in", "select distinct(iduser) as userid from bank_accounts")
+     .limit(0, 10)
+     .toSQL();
+   expect(sql).toBe(sample);
+  });
+
 });

@@ -48,32 +48,31 @@ function _join(params){
 };
 
 /**
- * if params is an array, returns: 
  * returns "field" in ("value1", "value2", .. )
- * else, if string insert as subquery:
- *  in ( params )
  */
 function _in(params)
 {
-  if(typeof params === "string")
+  var s = params.field + " in (";
+    s = params.values.reduce(function(ac, el, i, col){
+    ac += _q(el);
+    ac += (i < col.length -1)?", ":"";
+    return ac; 
+  }, s);
+  s += ")";
+  return s; 
+};
+
+
+function _expr(params)
+{
+  if(params.operator === "in")
   {
-    return " in ( "+ params + " ) ";
+    return  " " + params.field + " in ( " + params.value + " )";
   }
   else
   {
-    var s = params.field + " in (";
-      s = params.values.reduce(function(ac, el, i, col){
-      ac += _q(el);
-      ac += (i < col.length -1)?", ":"";
-      return ac; 
-    }, s);
-    s += ")";
-    return s; 
+    return params.field+" "+params.operator+" "+_q(params.value);
   }
-};
-
-function _expr(params){
-  return params.field+" "+params.operator+" "+_q(params.value);
 }
 
 function _and(params){
@@ -98,9 +97,12 @@ function _from(ac, el, i, col){
 //generating where clauses. use with reduce. 
 function _wheres(acc, el, i, col){
   var s; 
-  if(el.exp instanceof Function){
+  if(el.exp instanceof Function)
+  {
     s = el.exp(el);
-  }else{
+  }
+  else
+  {
     s = el;
   }
   if(i > 0){ //needs conector prefix
@@ -252,7 +254,8 @@ SimpleSQL.Generator.prototype.from= function(table_name, alias){
 */
 SimpleSQL.Generator.prototype.where= function(field, operator, value){
   //this.wheres = [];
-  if(field && operator){
+  if(field && operator)
+  {
     this.wheres.push({
       field: field,
       operator: operator,
