@@ -28,13 +28,23 @@ function _join(params){
 };
 
 /**
+ * if params is an array, 
  * returns "field" in ("value1", "value2", .. )
+ * if params is an string, assume it is a subquery
+ * and append like this: in (params) 
  */
 function _in(params){
-  var s = _q(params.field) + " in (";
-  s += _arrayToCSL(params.values, true);
-  s += ")";
-  return s; 
+  if(typeof params === "string")
+  {
+    return " in ( " + params + " ) ";
+  }
+  else
+  {
+    var s = _q(params.field) + " in (";
+    s += _arrayToCSL(params.values, true);
+    s += ")";
+    return s; 
+  }
 };
 
 //returns list of "name" [as "alias"]. use with reduce.
